@@ -64,23 +64,8 @@ function RemoveGear(weapon)
 end
 
 function SetGear(weapon)
-	local bone       = nil
-	local boneX      = 0.0
-	local boneY      = 0.0
-	local boneZ      = 0.0
-	local boneXRot   = 0.0
-	local boneYRot   = 0.0
-	local boneZRot   = 0.0
 	local playerPed  = PlayerPedId()
 	local playerData = ESX.GetPlayerData()
-
-	bone     = weapon.bone
-	boneX    = weapon.x
-	boneY    = weapon.y
-	boneZ    = weapon.z
-	boneXRot = weapon.xRot
-	boneYRot = weapon.yRot
-	boneZRot = weapon.zRot
 
 	local weaponHash = GetHashKey(weapon.name)
 	ESX.Streaming.RequestWeaponAsset(weaponHash)
@@ -104,9 +89,9 @@ function SetGear(weapon)
 		end
 	end
 
-	local boneIndex = GetPedBoneIndex(playerPed, bone)
+	local boneIndex = GetPedBoneIndex(playerPed, weapon.bone)
 	local bonePos 	= GetWorldPositionOfEntityBone(playerPed, boneIndex)
-	AttachEntityToEntity(pickupObject, playerPed, boneIndex, boneX, boneY, boneZ, boneXRot, boneYRot, boneZRot, false, false, false, false, 2, true)
+	AttachEntityToEntity(pickupObject, playerPed, boneIndex, weapon.x, weapon.y, weapon.z, weapon.xRot, weapon.yRot, weapon.zRot, false, false, false, false, 2, true)
 	Weapons[weapon.name] = pickupObject
 	return false
 end
