@@ -30,7 +30,7 @@ Citizen.CreateThread(function()
 				end
 
 				if not onPlayer and weaponHash ~= GetSelectedPedWeapon(playerPed) then
-					SetGear(Config.RealWeapons[i].name)
+					SetGear(Config.RealWeapons[i])
 				elseif onPlayer and weaponHash == GetSelectedPedWeapon(playerPed) then
 					RemoveGear(Config.RealWeapons[i].name)
 				end
@@ -74,20 +74,15 @@ function SetGear(weapon)
 	local playerPed  = PlayerPedId()
 	local playerData = ESX.GetPlayerData()
 
-	for i=1, #Config.RealWeapons, 1 do
-		if Config.RealWeapons[i].name == weapon then
-			bone     = Config.RealWeapons[i].bone
-			boneX    = Config.RealWeapons[i].x
-			boneY    = Config.RealWeapons[i].y
-			boneZ    = Config.RealWeapons[i].z
-			boneXRot = Config.RealWeapons[i].xRot
-			boneYRot = Config.RealWeapons[i].yRot
-			boneZRot = Config.RealWeapons[i].zRot
-			break
-		end
-	end
+	bone     = weapon.bone
+	boneX    = weapon.x
+	boneY    = weapon.y
+	boneZ    = weapon.z
+	boneXRot = weapon.xRot
+	boneYRot = weapon.yRot
+	boneZRot = weapon.zRot
 
-	local weaponHash = GetHashKey(weapon)
+	local weaponHash = GetHashKey(weapon.name)
 	ESX.Streaming.RequestWeaponAsset(weaponHash)
 	
 	local pickupObject = CreateWeaponObject(weaponHash, 50, x, y, z, true, 1.0, 0)
@@ -96,7 +91,7 @@ function SetGear(weapon)
 	local playerLoadout = playerData.loadout
 	local components = nil
 	for k,v in ipairs(playerLoadout) do
-		if v.name == weapon then
+		if v.name == weapon.name then
 			components = v.components
 			break
 		end
@@ -104,7 +99,7 @@ function SetGear(weapon)
 
 	if components ~= nil then
 		for k,v in ipairs(components) do
-			local component = ESX.GetWeaponComponent(weapon, v)
+			local component = ESX.GetWeaponComponent(weapon.name, v)
 			GiveWeaponComponentToWeaponObject(pickupObject, component.hash)
 		end
 	end
@@ -112,19 +107,23 @@ function SetGear(weapon)
 	local boneIndex = GetPedBoneIndex(playerPed, bone)
 	local bonePos 	= GetWorldPositionOfEntityBone(playerPed, boneIndex)
 	AttachEntityToEntity(pickupObject, playerPed, boneIndex, boneX, boneY, boneZ, boneXRot, boneYRot, boneZRot, false, false, false, false, 2, true)
-	Weapons[weapon] = pickupObject
+	Weapons[weapon.name] = pickupObject
 	return false
 end
 
 function SetGears()
 	local playerData = ESX.GetPlayerData()
 
-	for i=1, #playerData.loadout, 1 do
-		local _wait = true
-		_wait = SetGear(playerData.loadout[i].name)
+	for k=1, #playerData.loadout, 1 do
+		for i=1, #Config.RealWeapons, 1 do
+			if playerData.loadout[k].name == Config.RealWeapons[i].name then
+				local _wait = true
 
-		while _wait do
-			Citizen.Wait(10)
+				while _wait do
+					_wait = SetGear(Config.RealWeapons[i])
+					Citizen.Wait(10)
+				end
+			end
 		end
 	end
 end
